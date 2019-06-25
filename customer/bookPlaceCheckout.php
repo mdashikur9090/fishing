@@ -1,0 +1,183 @@
+
+<?php
+include( "../header.php" );
+include( "../dbCon.php" );
+$con = connection();
+?>
+<?php
+if(isset($_SESSION["isLogedIn"]) && $_SESSION["isLogedIn"]==false){
+    ?>
+<script>
+    location.href="<?=$_SESSION["directory"]?>index.php";
+</script>
+    <?php
+}
+
+if(isset($_POST["submit"])){
+    
+    $price=$_REQUEST["price"];
+    $placeID=$_REQUEST["id"];
+    $requereSeat=$_REQUEST["requiredSeat"];
+    $ticket_type=$_REQUEST["ticket_type"];
+       
+
+?>
+
+<!-- Page Header -->
+<div class="container-fluid no-padding page-header" style="margin-top: 200px;">
+    <div class="container">
+        <ol class="breadcrumb">
+            <li>Payment</li>
+        </ol>
+    </div>
+</div> <!-- Page Header /- -->
+<div class="padding-80"></div>
+
+
+
+
+<!-- Cart -->
+<div class="woocommerce-cart container-fluid no-left-padding no-right-padding">
+    <!-- Container -->
+    <div class="container">
+        <!-- Row -->
+        <div class="row">
+            <!-- Cart Table -->
+            <form action="confirmBookPlace.php" method="post" id="payment-form">
+
+
+                <input type="hidden" name="id" value="<?=$placeID?>">
+                <input type="hidden" name="requiredSeat" value="<?=$requereSeat?>">
+                <input type="hidden" name="ticket_type" value="<?=$ticket_type?>">
+                
+
+                <label for="card-element">Amount </label>
+                <input type="text" name="amount" readonly value="<?=$price*$requereSeat?>">
+                <input type="hidden" name="token" class="token">
+                  <div class="form-row">
+                    <label for="card-element">Credit or debit card</label>
+                    <div id="card-element">
+                        <!-- a Stripe Element will be inserted here. -->
+                    </div>
+             
+                    <!-- Used to display form errors -->
+                    <div id="card-errors" role="alert"></div>
+                  </div>
+             
+                    <button>Submit Payment</button>
+            </form>
+        </div>
+
+        <!-- Row /- -->
+    </div>
+    <!-- Container /- -->
+</div> <!-- Cart /- -->
+
+
+
+
+<!-- Footer Section -->
+<?php
+
+include( "../footer.php" );
+?>
+<!-- Footer Section /- -->
+
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // Create a Stripe client
+    var stripe = Stripe('pk_test_b708ITpUsAltH9Nm4D95lZRf00jSBkSduP');
+ 
+    // Create an instance of Elements
+    var elements = stripe.elements();
+ 
+    // Custom styling can be passed to options when creating an Element.
+    // (Note that this demo uses a wider set of styles than the guide below.)
+    var style = {
+    base: {
+        color: '#32325d',
+        lineHeight: '18px',
+        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+        fontSmoothing: 'antialiased',
+        fontSize: '16px',
+        '::placeholder': {
+        color: '#aab7c4'
+        }
+    },
+    invalid: {
+        color: '#fa755a',
+        iconColor: '#fa755a'
+    }
+    };
+ 
+    // Create an instance of the card Element
+    var card = elements.create('card', {style: style});
+ 
+    // Add an instance of the card Element into the `card-element` <div>
+    card.mount('#card-element');
+ 
+    // Handle real-time validation errors from the card Element.
+    card.addEventListener('change', function(event) {
+        var displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+ 
+    // Handle form submission
+    var form = document.getElementById('payment-form');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+ 
+        stripe.createToken(card).then(function(result) {
+            if (result.error) {
+            // Inform the user if there was an error
+            var errorElement = document.getElementById('card-errors');
+            errorElement.textContent = result.error.message;
+            } else {
+                // Send the token to your server. Use ajax request
+                document.querySelector('.token').value = result.token.id;
+                 
+                document.getElementById('payment-form').submit();
+            }
+        });
+    });
+</script>
+
+<style>
+  .StripeElement {
+    background-color: white;
+    height: 40px;
+    width: 500px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 3px 0 #e6ebf1;
+    -webkit-transition: box-shadow 150ms ease;
+    transition: box-shadow 150ms ease;
+}
+ 
+.StripeElement--focus {
+    box-shadow: 0 1px 3px 0 #cfd7df;
+}
+ 
+.StripeElement--invalid {
+    border-color: #fa755a;
+}
+ 
+.StripeElement--webkit-autofill {
+    background-color: #fefde5 !important;
+}
+</style>
+
+<?php } else { ?>
+
+<script>
+    location.href="<?=$_SESSION["directory"]?>index.php";
+</script>
+
+<?php } ?>
+
